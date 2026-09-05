@@ -1,0 +1,2095 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#635BFF">
+
+<title>My Money, My Choice</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --primary:#635BFF;
+    --primary2:#8B83FF;
+    --dark:#25233A;
+    --muted:#77758A;
+    --bg:#F5F6FB;
+    --white:#fff;
+
+    --save:#12A878;
+    --save-bg:#E8F8F2;
+
+    --spend:#F39C12;
+    --spend-bg:#FFF5DF;
+
+    --give:#E74C3C;
+    --give-bg:#FFEBE8;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:
+        radial-gradient(circle at 0% 0%,#E9E7FF 0,transparent 30%),
+        radial-gradient(circle at 100% 100%,#E3FFF4 0,transparent 30%),
+        var(--bg);
+    color:var(--dark);
+}
+
+button,input{
+    font:inherit;
+}
+
+button{
+    border:0;
+    cursor:pointer;
+}
+
+.app{
+    width:100%;
+    max-width:900px;
+    margin:auto;
+    padding:15px;
+}
+
+.screen{
+    display:none;
+    animation:show .35s ease;
+}
+
+.screen.active{
+    display:block;
+}
+
+@keyframes show{
+    from{
+        opacity:0;
+        transform:translateY(12px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* TOP */
+
+.topbar{
+    height:58px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:17px;
+    font-weight:900;
+}
+
+.brand-icon{
+    width:40px;
+    height:40px;
+    display:grid;
+    place-items:center;
+    border-radius:13px;
+    color:white;
+    background:linear-gradient(135deg,var(--primary),var(--primary2));
+    box-shadow:0 8px 20px rgba(99,91,255,.25);
+}
+
+.back{
+    display:none;
+    background:white;
+    border:1px solid #E5E5EE;
+    padding:9px 14px;
+    border-radius:12px;
+    font-weight:800;
+}
+
+/* HERO */
+
+.hero{
+    background:linear-gradient(135deg,var(--primary),var(--primary2));
+    color:white;
+    border-radius:28px;
+    padding:34px 22px;
+    text-align:center;
+    box-shadow:0 18px 45px rgba(76,67,200,.22);
+    margin-bottom:18px;
+}
+
+.hero-icon{
+    font-size:48px;
+}
+
+.hero h1{
+    margin:8px 0;
+    font-size:clamp(28px,7vw,44px);
+    line-height:1.05;
+}
+
+.hero p{
+    max-width:620px;
+    margin:auto;
+    line-height:1.6;
+    opacity:.94;
+}
+
+.card{
+    background:var(--white);
+    border:1px solid #E7E7F0;
+    border-radius:22px;
+    padding:22px;
+    margin-bottom:16px;
+    box-shadow:0 10px 30px rgba(30,30,70,.06);
+}
+
+.title{
+    text-align:center;
+    margin:0 0 6px;
+    font-size:24px;
+    font-weight:900;
+}
+
+.subtitle{
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    margin:0 0 20px;
+    line-height:1.5;
+}
+
+/* AMOUNT */
+
+.amount-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+}
+
+.amount{
+    border:2px solid #E5E5EE;
+    background:#FAFAFF;
+    border-radius:18px;
+    padding:17px 8px;
+    font-size:25px;
+    font-weight:950;
+    color:var(--dark);
+    transition:.2s;
+}
+
+.amount small{
+    display:block;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:4px;
+}
+
+.amount.selected{
+    border-color:var(--primary);
+    background:#F0EFFF;
+    color:var(--primary);
+    transform:translateY(-2px);
+}
+
+/* MONEY */
+
+.money{
+    text-align:center;
+    padding:8px 0 25px;
+}
+
+.note{
+    width:min(100%,390px);
+    height:145px;
+    margin:auto;
+    border-radius:18px;
+    border:4px solid #72B889;
+    background:linear-gradient(135deg,#E1F8E8,#BDEACB);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    overflow:hidden;
+    color:#22683C;
+    box-shadow:inset 0 0 0 5px rgba(255,255,255,.35),
+               0 14px 30px rgba(30,120,70,.12);
+}
+
+.note:before,
+.note:after{
+    content:"₹";
+    position:absolute;
+    font-size:70px;
+    font-weight:900;
+    opacity:.1;
+}
+
+.note:before{
+    left:15px;
+    top:-5px;
+}
+
+.note:after{
+    right:15px;
+    bottom:-20px;
+}
+
+.note-label{
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:1.5px;
+    z-index:1;
+}
+
+.note-value{
+    font-size:43px;
+    font-weight:950;
+    z-index:1;
+}
+
+/* QUICK SPLITS */
+
+.quick-title{
+    font-size:15px;
+    font-weight:900;
+    margin-bottom:10px;
+}
+
+.quick-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.quick{
+    background:#F7F7FB;
+    border:1px solid #E6E6EE;
+    border-radius:13px;
+    padding:11px 5px;
+    font-size:12px;
+    font-weight:800;
+    color:var(--dark);
+}
+
+.quick:active{
+    transform:scale(.97);
+}
+
+.quick.active{
+    border-color:var(--primary);
+    background:#F0EFFF;
+    color:var(--primary);
+}
+
+/* BAR */
+
+.distribution{
+    height:31px;
+    display:flex;
+    overflow:hidden;
+    border-radius:30px;
+    background:#ECECF3;
+    margin:15px 0 25px;
+}
+
+.part{
+    height:100%;
+    transition:width .2s ease;
+}
+
+.part.save{background:var(--save)}
+.part.spend{background:var(--spend)}
+.part.give{background:var(--give)}
+
+/* ALLOCATION */
+
+.allocation{
+    margin-bottom:24px;
+}
+
+.alloc-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:9px;
+}
+
+.alloc-name{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:900;
+}
+
+.dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+}
+
+.dot.save{background:var(--save)}
+.dot.spend{background:var(--spend)}
+.dot.give{background:var(--give)}
+
+.alloc-value{
+    font-weight:950;
+    font-size:18px;
+}
+
+.percent{
+    color:var(--muted);
+    font-size:12px;
+    margin-left:4px;
+}
+
+input[type=range]{
+    width:100%;
+    appearance:none;
+    height:8px;
+    border-radius:20px;
+    background:#E7E7EF;
+    outline:none;
+}
+
+input[type=range]::-webkit-slider-thumb{
+    appearance:none;
+    width:27px;
+    height:27px;
+    border-radius:50%;
+    background:#fff;
+    border:4px solid var(--primary);
+    box-shadow:0 3px 9px rgba(0,0,0,.16);
+}
+
+.save-range::-webkit-slider-thumb{
+    border-color:var(--save);
+}
+
+.spend-range::-webkit-slider-thumb{
+    border-color:var(--spend);
+}
+
+.give-range::-webkit-slider-thumb{
+    border-color:var(--give);
+}
+
+.total{
+    text-align:center;
+    background:#F7F7FB;
+    padding:13px;
+    border-radius:14px;
+    font-size:14px;
+    font-weight:800;
+}
+
+/* BUTTONS */
+
+.primary,
+.secondary{
+    width:100%;
+    padding:15px;
+    border-radius:15px;
+    font-weight:900;
+    font-size:15px;
+}
+
+.primary{
+    color:#fff;
+    background:linear-gradient(135deg,var(--primary),var(--primary2));
+    box-shadow:0 9px 22px rgba(99,91,255,.22);
+}
+
+.secondary{
+    background:#fff;
+    border:1px solid #E5E5EE;
+    color:var(--dark);
+}
+
+.btn-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+/* RESULT */
+
+.result{
+    text-align:center;
+}
+
+.result-icon{
+    font-size:55px;
+}
+
+.result h2{
+    font-size:29px;
+    margin:6px 0;
+}
+
+.result-intro{
+    color:var(--muted);
+    line-height:1.5;
+}
+
+.breakdown{
+    display:grid;
+    gap:9px;
+    margin:22px 0;
+    text-align:left;
+}
+
+.break{
+    display:flex;
+    justify-content:space-between;
+    padding:15px;
+    border-radius:14px;
+    font-weight:850;
+}
+
+.break.save{
+    background:var(--save-bg);
+    color:#11775D;
+}
+
+.break.spend{
+    background:var(--spend-bg);
+    color:#AD6800;
+}
+
+.break.give{
+    background:var(--give-bg);
+    color:#C5382D;
+}
+
+.message{
+    background:linear-gradient(135deg,#F0EFFF,#FAF9FF);
+    color:#4C45C7;
+    padding:18px;
+    border-radius:16px;
+    font-weight:850;
+    line-height:1.5;
+}
+
+.note-text{
+    margin:20px 0;
+    line-height:1.6;
+}
+
+.reflection{
+    border-top:1px solid #E8E8EF;
+    margin-top:23px;
+    padding-top:23px;
+}
+
+.reflection h3{
+    font-size:18px;
+}
+
+.reflect{
+    width:100%;
+    padding:14px;
+    border-radius:14px;
+    font-weight:900;
+}
+
+.yes{
+    background:var(--save-bg);
+    color:#11775D;
+}
+
+.change{
+    background:var(--give-bg);
+    color:#C5382D;
+}
+
+/* CERTIFICATE */
+
+.certificate{
+    text-align:center;
+}
+
+.trophy{
+    font-size:55px;
+}
+
+.form-group{
+    text-align:left;
+    margin-bottom:15px;
+}
+
+.form-group label{
+    display:block;
+    font-size:12px;
+    font-weight:900;
+    margin-bottom:6px;
+}
+
+.form-group input{
+    width:100%;
+    padding:13px;
+    border:1px solid #E4E4ED;
+    border-radius:13px;
+    background:#FAFAFF;
+    outline:none;
+}
+
+.form-group input:focus{
+    border-color:var(--primary);
+}
+
+.certificate-info{
+    background:#F7F7FB;
+    border-radius:15px;
+    padding:14px;
+    margin:15px 0;
+    text-align:left;
+    font-size:13px;
+    line-height:1.7;
+}
+
+/* FOOTER */
+
+.footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    padding:10px 0 4px;
+}
+
+/* MOBILE */
+
+@media(max-width:520px){
+
+    .app{
+        padding:11px;
+    }
+
+    .hero{
+        border-radius:22px;
+        padding:28px 17px;
+    }
+
+    .card{
+        padding:18px;
+        border-radius:19px;
+    }
+
+    .amount{
+        font-size:21px;
+    }
+
+    .quick-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .btn-row{
+        grid-template-columns:1fr;
+    }
+
+    .note{
+        height:125px;
+    }
+
+    .note-value{
+        font-size:36px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- TOP BAR -->
+
+<div class="topbar">
+
+    <div class="brand">
+        <div class="brand-icon">₹</div>
+        <span>My Money, My Choice</span>
+    </div>
+
+    <button class="back" id="backBtn" onclick="goBack()">
+        ← Back
+    </button>
+
+</div>
+
+
+<!-- ================= SCREEN 1 ================= -->
+
+<section class="screen active" id="screen1">
+
+    <div class="hero">
+
+        <div class="hero-icon">💰</div>
+
+        <h1>My Money, My Choice</h1>
+
+        <p>
+            You have some money. What will you do with it?
+            Make your own choice and discover where your money goes!
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2 class="title">Choose Your Money</h2>
+
+        <p class="subtitle">
+            Pick one amount to begin your money challenge.
+        </p>
+
+        <div class="amount-grid">
+
+            <button class="amount"
+                    data-amount="100"
+                    onclick="selectAmount(100,this)">
+                ₹100
+                <small>Small Choice</small>
+            </button>
+
+            <button class="amount"
+                    data-amount="200"
+                    onclick="selectAmount(200,this)">
+                ₹200
+                <small>Medium Choice</small>
+            </button>
+
+            <button class="amount"
+                    data-amount="500"
+                    onclick="selectAmount(500,this)">
+                ₹500
+                <small>Big Choice</small>
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= SCREEN 2 ================= -->
+
+<section class="screen" id="screen2">
+
+<div class="card">
+
+    <div class="money">
+
+        <div class="note">
+
+            <div class="note-label">
+                YOUR VIRTUAL MONEY
+            </div>
+
+            <div class="note-value" id="moneyValue">
+                ₹100
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <h2 class="title">
+        Where Will Your Money Go?
+    </h2>
+
+    <p class="subtitle">
+        Choose a quick plan or create your own split.
+    </p>
+
+
+    <!-- QUICK OPTIONS -->
+
+    <div class="quick-title">
+        ⚡ Quick Split
+    </div>
+
+    <div class="quick-grid">
+
+        <button class="quick"
+                onclick="quickSplit('balanced',this)">
+            ⚖️ Balanced
+        </button>
+
+        <button class="quick"
+                onclick="quickSplit('save',this)">
+            🌱 Save More
+        </button>
+
+        <button class="quick"
+                onclick="quickSplit('spend',this)">
+            🛍️ Spend More
+        </button>
+
+        <button class="quick"
+                onclick="quickSplit('give',this)">
+            ❤️ Give More
+        </button>
+
+    </div>
+
+
+    <!-- BAR -->
+
+    <div class="distribution">
+
+        <div class="part save" id="barSave"></div>
+
+        <div class="part spend" id="barSpend"></div>
+
+        <div class="part give" id="barGive"></div>
+
+    </div>
+
+
+    <!-- SAVE -->
+
+    <div class="allocation">
+
+        <div class="alloc-head">
+
+            <div class="alloc-name">
+                <span class="dot save"></span>
+                SAVE
+            </div>
+
+            <div class="alloc-value">
+
+                <span id="saveValue">₹34</span>
+
+                <span class="percent" id="savePercent">
+                    34%
+                </span>
+
+            </div>
+
+        </div>
+
+        <input
+            type="range"
+            id="saveSlider"
+            class="save-range"
+            min="0"
+            max="100"
+            value="34"
+            oninput="changeSlider('save')"
+        >
+
+    </div>
+
+
+    <!-- SPEND -->
+
+    <div class="allocation">
+
+        <div class="alloc-head">
+
+            <div class="alloc-name">
+                <span class="dot spend"></span>
+                SPEND
+            </div>
+
+            <div class="alloc-value">
+
+                <span id="spendValue">₹33</span>
+
+                <span class="percent" id="spendPercent">
+                    33%
+                </span>
+
+            </div>
+
+        </div>
+
+        <input
+            type="range"
+            id="spendSlider"
+            class="spend-range"
+            min="0"
+            max="100"
+            value="33"
+            oninput="changeSlider('spend')"
+        >
+
+    </div>
+
+
+    <!-- GIVE -->
+
+    <div class="allocation">
+
+        <div class="alloc-head">
+
+            <div class="alloc-name">
+                <span class="dot give"></span>
+                GIVE
+            </div>
+
+            <div class="alloc-value">
+
+                <span id="giveValue">₹33</span>
+
+                <span class="percent" id="givePercent">
+                    33%
+                </span>
+
+            </div>
+
+        </div>
+
+        <input
+            type="range"
+            id="giveSlider"
+            class="give-range"
+            min="0"
+            max="100"
+            value="33"
+            oninput="changeSlider('give')"
+        >
+
+    </div>
+
+
+    <div class="total">
+
+        Total:
+        <strong id="totalValue">₹100</strong>
+
+        &nbsp; / &nbsp;
+
+        Available:
+        <strong id="availableValue">₹100</strong>
+
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <div class="btn-row">
+
+        <button class="secondary" onclick="resetSplit()">
+            🔄 Reset
+        </button>
+
+        <button class="primary" onclick="submitChoice()">
+            ✨ My Choice
+        </button>
+
+    </div>
+
+</div>
+
+</section>
+
+
+<!-- ================= SCREEN 3 ================= -->
+
+<section class="screen" id="screen3">
+
+<div class="card result">
+
+    <div class="result-icon">
+        🎉
+    </div>
+
+    <h2>You chose to:</h2>
+
+    <p class="result-intro">
+        Here's how you decided to divide your money.
+    </p>
+
+
+    <div class="breakdown">
+
+        <div class="break save">
+            <span>💚 Save</span>
+            <strong id="resultSave">₹0</strong>
+        </div>
+
+        <div class="break spend">
+            <span>🧡 Spend</span>
+            <strong id="resultSpend">₹0</strong>
+        </div>
+
+        <div class="break give">
+            <span>❤️ Give</span>
+            <strong id="resultGive">₹0</strong>
+        </div>
+
+    </div>
+
+
+    <div class="note-text">
+
+        <strong>
+            You made your choice. Now you know where your money goes.
+        </strong>
+
+        <br><br>
+
+        <em>
+            There is no perfect split.
+            What matters is knowing why you chose it.
+        </em>
+
+    </div>
+
+
+    <div class="message" id="personalMessage">
+        You found a balance between today, tomorrow and others.
+    </div>
+
+
+    <div class="reflection">
+
+        <h3>
+            Would you make the same choice again?
+        </h3>
+
+        <div class="btn-row">
+
+            <button class="reflect yes"
+                    onclick="sameChoice(true)">
+                👍 YES, I WOULD
+            </button>
+
+            <button class="reflect change"
+                    onclick="sameChoice(false)">
+                🔄 I'D CHANGE IT
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <button class="primary"
+            onclick="showCertificate()">
+        🏆 Get My Beautiful Certificate
+    </button>
+
+</div>
+
+</section>
+
+
+<!-- ================= SCREEN 4 ================= -->
+
+<section class="screen" id="screen4">
+
+<div class="card certificate">
+
+    <div class="trophy">
+        🏆
+    </div>
+
+    <h2 class="title">
+        Your Certificate
+    </h2>
+
+    <p class="subtitle">
+        Enter your details to create your personalized
+        Money Choice Champion certificate.
+    </p>
+
+
+    <div class="form-group">
+
+        <label>
+            STUDENT NAME
+        </label>
+
+        <input
+            id="studentName"
+            type="text"
+            placeholder="Enter your name"
+            maxlength="60"
+        >
+
+    </div>
+
+
+    <div class="form-group">
+
+        <label>
+            CLASS / PROFILE
+        </label>
+
+        <input
+            id="studentClass"
+            type="text"
+            placeholder="Example: Class 4 / Student"
+            maxlength="50"
+        >
+
+    </div>
+
+
+    <div class="certificate-info">
+
+        <strong>Your Activity:</strong>
+        My Money, My Choice
+        <br>
+
+        <strong>Amount Managed:</strong>
+        <span id="certAmountInfo">₹100</span>
+
+        <br>
+
+        <strong>Your Split:</strong>
+        Save ₹<span id="certSaveInfo">0</span>
+        · Spend ₹<span id="certSpendInfo">0</span>
+        · Give ₹<span id="certGiveInfo">0</span>
+
+    </div>
+
+
+    <button class="primary"
+            onclick="downloadCertificate()">
+
+        📥 DOWNLOAD CERTIFICATE AS JPG
+
+    </button>
+
+    <br><br>
+
+    <button class="secondary"
+            onclick="showScreen(3)">
+
+        ← Back to Result
+
+    </button>
+
+</div>
+
+</section>
+
+
+<div class="footer">
+    💡 Every money choice teaches us something new.
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   GAME DATA
+========================================= */
+
+let selectedAmount = 100;
+
+let saveAmount = 34;
+let spendAmount = 33;
+let giveAmount = 33;
+
+let currentScreen = 1;
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+function showScreen(number){
+
+    document.querySelectorAll(".screen")
+        .forEach(s => s.classList.remove("active"));
+
+    document
+        .getElementById("screen" + number)
+        .classList.add("active");
+
+    currentScreen = number;
+
+    document.getElementById("backBtn").style.display =
+        number > 1 ? "block" : "none";
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
+
+
+function goBack(){
+
+    if(currentScreen > 1){
+        showScreen(currentScreen - 1);
+    }
+}
+
+
+/* =========================================
+   SELECT AMOUNT
+========================================= */
+
+function selectAmount(amount,button){
+
+    selectedAmount = amount;
+
+    document.querySelectorAll(".amount")
+        .forEach(b => b.classList.remove("selected"));
+
+    button.classList.add("selected");
+
+    document.getElementById("moneyValue")
+        .textContent = "₹" + amount;
+
+    document.getElementById("availableValue")
+        .textContent = "₹" + amount;
+
+    resetSplit();
+
+    showScreen(2);
+}
+
+
+/* =========================================
+   QUICK SPLITS
+========================================= */
+
+function quickSplit(type,button){
+
+    document.querySelectorAll(".quick")
+        .forEach(b => b.classList.remove("active"));
+
+    button.classList.add("active");
+
+
+    if(type === "balanced"){
+
+        saveAmount = Math.round(selectedAmount * .34);
+        spendAmount = Math.round(selectedAmount * .33);
+        giveAmount =
+            selectedAmount - saveAmount - spendAmount;
+
+    }
+
+
+    if(type === "save"){
+
+        saveAmount = Math.round(selectedAmount * .60);
+        spendAmount = Math.round(selectedAmount * .25);
+        giveAmount =
+            selectedAmount - saveAmount - spendAmount;
+
+    }
+
+
+    if(type === "spend"){
+
+        spendAmount = Math.round(selectedAmount * .60);
+        saveAmount = Math.round(selectedAmount * .25);
+        giveAmount =
+            selectedAmount - saveAmount - spendAmount;
+
+    }
+
+
+    if(type === "give"){
+
+        giveAmount = Math.round(selectedAmount * .60);
+        saveAmount = Math.round(selectedAmount * .25);
+        spendAmount =
+            selectedAmount - saveAmount - giveAmount;
+
+    }
+
+
+    updateUI();
+}
+
+
+/* =========================================
+   SLIDER LOGIC
+========================================= */
+
+function changeSlider(changed){
+
+    let value;
+
+    if(changed === "save"){
+        value = Number(
+            document.getElementById("saveSlider").value
+        );
+        saveAmount = value;
+    }
+
+    if(changed === "spend"){
+        value = Number(
+            document.getElementById("spendSlider").value
+        );
+        spendAmount = value;
+    }
+
+    if(changed === "give"){
+        value = Number(
+            document.getElementById("giveSlider").value
+        );
+        giveAmount = value;
+    }
+
+
+    /*
+        Make sure the total never exceeds
+        the selected amount.
+    */
+
+    let total =
+        saveAmount +
+        spendAmount +
+        giveAmount;
+
+
+    if(total > selectedAmount){
+
+        let excess = total - selectedAmount;
+
+        let others = [];
+
+        if(changed !== "save") others.push("save");
+        if(changed !== "spend") others.push("spend");
+        if(changed !== "give") others.push("give");
+
+
+        for(let category of others){
+
+            if(excess <= 0) break;
+
+
+            if(category === "save"){
+
+                let reduction =
+                    Math.min(saveAmount,excess);
+
+                saveAmount -= reduction;
+                excess -= reduction;
+            }
+
+
+            if(category === "spend"){
+
+                let reduction =
+                    Math.min(spendAmount,excess);
+
+                spendAmount -= reduction;
+                excess -= reduction;
+            }
+
+
+            if(category === "give"){
+
+                let reduction =
+                    Math.min(giveAmount,excess);
+
+                giveAmount -= reduction;
+                excess -= reduction;
+            }
+
+        }
+
+    }
+
+
+    /*
+        If total becomes smaller,
+        automatically place remaining
+        money into another category.
+    */
+
+    total =
+        saveAmount +
+        spendAmount +
+        giveAmount;
+
+
+    if(total < selectedAmount){
+
+        let remaining =
+            selectedAmount - total;
+
+
+        if(changed !== "give"){
+            giveAmount += remaining;
+        }
+
+        else if(changed !== "save"){
+            saveAmount += remaining;
+        }
+
+        else{
+            spendAmount += remaining;
+        }
+
+    }
+
+
+    updateUI();
+}
+
+
+/* =========================================
+   UPDATE UI
+========================================= */
+
+function updateUI(){
+
+    let total =
+        saveAmount +
+        spendAmount +
+        giveAmount;
+
+
+    document.getElementById("saveSlider").max =
+        selectedAmount;
+
+    document.getElementById("spendSlider").max =
+        selectedAmount;
+
+    document.getElementById("giveSlider").max =
+        selectedAmount;
+
+
+    document.getElementById("saveSlider").value =
+        saveAmount;
+
+    document.getElementById("spendSlider").value =
+        spendAmount;
+
+    document.getElementById("giveSlider").value =
+        giveAmount;
+
+
+    document.getElementById("saveValue")
+        .textContent = "₹" + saveAmount;
+
+    document.getElementById("spendValue")
+        .textContent = "₹" + spendAmount;
+
+    document.getElementById("giveValue")
+        .textContent = "₹" + giveAmount;
+
+
+    let savePercent =
+        Math.round(saveAmount / selectedAmount * 100);
+
+    let spendPercent =
+        Math.round(spendAmount / selectedAmount * 100);
+
+    let givePercent =
+        Math.round(giveAmount / selectedAmount * 100);
+
+
+    document.getElementById("savePercent")
+        .textContent = savePercent + "%";
+
+    document.getElementById("spendPercent")
+        .textContent = spendPercent + "%";
+
+    document.getElementById("givePercent")
+        .textContent = givePercent + "%";
+
+
+    document.getElementById("barSave")
+        .style.width = savePercent + "%";
+
+    document.getElementById("barSpend")
+        .style.width = spendPercent + "%";
+
+    document.getElementById("barGive")
+        .style.width = givePercent + "%";
+
+
+    document.getElementById("totalValue")
+        .textContent = "₹" + total;
+
+
+    document.getElementById("availableValue")
+        .textContent = "₹" + selectedAmount;
+
+
+    document.getElementById("certAmountInfo")
+        .textContent = "₹" + selectedAmount;
+
+    document.getElementById("certSaveInfo")
+        .textContent = saveAmount;
+
+    document.getElementById("certSpendInfo")
+        .textContent = spendAmount;
+
+    document.getElementById("certGiveInfo")
+        .textContent = giveAmount;
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+function resetSplit(){
+
+    saveAmount =
+        Math.floor(selectedAmount / 3);
+
+    spendAmount =
+        Math.floor(selectedAmount / 3);
+
+    giveAmount =
+        selectedAmount -
+        saveAmount -
+        spendAmount;
+
+
+    document.querySelectorAll(".quick")
+        .forEach(b => b.classList.remove("active"));
+
+    updateUI();
+}
+
+
+/* =========================================
+   SUBMIT
+========================================= */
+
+function submitChoice(){
+
+    document.getElementById("resultSave")
+        .textContent = "₹" + saveAmount;
+
+    document.getElementById("resultSpend")
+        .textContent = "₹" + spendAmount;
+
+    document.getElementById("resultGive")
+        .textContent = "₹" + giveAmount;
+
+
+    showPersonalMessage();
+
+    showScreen(3);
+}
+
+
+/* =========================================
+   PERSONALIZED MESSAGE
+========================================= */
+
+function showPersonalMessage(){
+
+    let message;
+
+
+    if(
+        saveAmount > spendAmount &&
+        saveAmount > giveAmount
+    ){
+
+        message =
+            "🌱 You are thinking about tomorrow.";
+
+    }
+
+    else if(
+        spendAmount > saveAmount &&
+        spendAmount > giveAmount
+    ){
+
+        message =
+            "🛍️ You know what you want to enjoy today.";
+
+    }
+
+    else if(
+        giveAmount > saveAmount &&
+        giveAmount > spendAmount
+    ){
+
+        message =
+            "❤️ You are thinking about others too.";
+
+    }
+
+    else{
+
+        message =
+            "⚖️ You found a balance between today, tomorrow and others.";
+
+    }
+
+
+    document.getElementById("personalMessage")
+        .textContent = message;
+}
+
+
+/* =========================================
+   REFLECTION
+========================================= */
+
+function sameChoice(isSame){
+
+    if(isSame){
+
+        document.getElementById("personalMessage")
+            .textContent =
+            "🌟 Great! You feel confident about your money choice.";
+
+    }
+
+    else{
+
+        document.getElementById("personalMessage")
+            .textContent =
+            "💡 That's okay! Thinking again about your choices is a smart money skill.";
+
+    }
+}
+
+
+/* =========================================
+   CERTIFICATE SCREEN
+========================================= */
+
+function showCertificate(){
+
+    updateUI();
+
+    showScreen(4);
+}
+
+
+/* =========================================
+   DOWNLOAD CERTIFICATE AS JPG
+========================================= */
+
+function downloadCertificate(){
+
+    const name =
+        document.getElementById("studentName")
+        .value.trim();
+
+    const studentClass =
+        document.getElementById("studentClass")
+        .value.trim();
+
+
+    if(!name){
+
+        alert("Please enter your name.");
+
+        document.getElementById("studentName")
+            .focus();
+
+        return;
+    }
+
+
+    if(!studentClass){
+
+        alert("Please enter your Class / Profile.");
+
+        document.getElementById("studentClass")
+            .focus();
+
+        return;
+    }
+
+
+    /*
+        High-resolution certificate canvas.
+        1600 x 1100 gives a good-quality JPG.
+    */
+
+    const canvas =
+        document.createElement("canvas");
+
+    const ctx =
+        canvas.getContext("2d");
+
+    const W = 1600;
+    const H = 1100;
+
+    canvas.width = W;
+    canvas.height = H;
+
+
+    /* BACKGROUND */
+
+    const gradient =
+        ctx.createLinearGradient(0,0,W,H);
+
+    gradient.addColorStop(0,"#F8F7FF");
+    gradient.addColorStop(1,"#FFFFFF");
+
+    ctx.fillStyle = gradient;
+
+    ctx.fillRect(0,0,W,H);
+
+
+    /* OUTER BORDER */
+
+    ctx.strokeStyle = "#635BFF";
+    ctx.lineWidth = 18;
+
+    ctx.strokeRect(
+        30,
+        30,
+        W - 60,
+        H - 60
+    );
+
+
+    ctx.strokeStyle = "#B9B4FF";
+    ctx.lineWidth = 3;
+
+    ctx.strokeRect(
+        55,
+        55,
+        W - 110,
+        H - 110
+    );
+
+
+    /* DECORATIVE CIRCLES */
+
+    ctx.globalAlpha = .08;
+
+    ctx.fillStyle = "#635BFF";
+
+    ctx.beginPath();
+    ctx.arc(130,130,90,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(W-130,130,90,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(130,H-130,90,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(W-130,H-130,90,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+
+
+    /* SEAL */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        W/2,
+        175,
+        67,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fillStyle = "#635BFF";
+    ctx.fill();
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 55px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillText(
+        "₹",
+        W/2,
+        175
+    );
+
+
+    /* TOP LABEL */
+
+    ctx.fillStyle = "#4A4770";
+
+    ctx.font =
+        "bold 24px Arial";
+
+    ctx.letterSpacing = "4px";
+
+    ctx.fillText(
+        "CERTIFICATE OF COMPLETION",
+        W/2,
+        275
+    );
+
+
+    /* MAIN TITLE */
+
+    ctx.fillStyle = "#292650";
+
+    ctx.font =
+        "bold 64px Arial";
+
+    ctx.fillText(
+        "Money Choice Champion",
+        W/2,
+        360
+    );
+
+
+    /* PRESENTED TO */
+
+    ctx.fillStyle = "#666477";
+
+    ctx.font =
+        "26px Arial";
+
+    ctx.fillText(
+        "This certificate is proudly presented to",
+        W/2,
+        425
+    );
+
+
+    /* STUDENT NAME */
+
+    ctx.fillStyle = "#635BFF";
+
+    ctx.font =
+        "bold 54px Arial";
+
+    ctx.fillText(
+        name,
+        W/2,
+        505
+    );
+
+
+    /* NAME LINE */
+
+    ctx.strokeStyle = "#635BFF";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+
+    ctx.moveTo(430,530);
+    ctx.lineTo(1170,530);
+
+    ctx.stroke();
+
+
+    /* CLASS */
+
+    ctx.fillStyle = "#36334D";
+
+    ctx.font =
+        "bold 24px Arial";
+
+    ctx.fillText(
+        "Class / Profile: " + studentClass,
+        W/2,
+        590
+    );
+
+
+    /* ACTIVITY */
+
+    ctx.font =
+        "23px Arial";
+
+    ctx.fillStyle = "#666477";
+
+    ctx.fillText(
+        "Activity: My Money, My Choice",
+        W/2,
+        635
+    );
+
+
+    ctx.fillText(
+        "Money Managed: ₹" + selectedAmount,
+        W/2,
+        675
+    );
+
+
+    /* SPLIT BOXES */
+
+    const boxY = 725;
+    const boxW = 340;
+    const boxH = 100;
+    const gap = 30;
+
+    const startX =
+        (W - (boxW*3 + gap*2))/2;
+
+
+    drawCertificateBox(
+        ctx,
+        startX,
+        boxY,
+        boxW,
+        boxH,
+        "#E8F8F2",
+        "#11775D",
+        "SAVE",
+        "₹" + saveAmount
+    );
+
+
+    drawCertificateBox(
+        ctx,
+        startX + boxW + gap,
+        boxY,
+        boxW,
+        boxH,
+        "#FFF5DF",
+        "#AD6800",
+        "SPEND",
+        "₹" + spendAmount
+    );
+
+
+    drawCertificateBox(
+        ctx,
+        startX + (boxW + gap)*2,
+        boxY,
+        boxW,
+        boxH,
+        "#FFEBE8",
+        "#C5382D",
+        "GIVE",
+        "₹" + giveAmount
+    );
+
+
+    /* QUOTE */
+
+    ctx.fillStyle = "#555466";
+
+    ctx.font =
+        "italic 22px Arial";
+
+    ctx.fillText(
+        "There is no perfect split. What matters is knowing why you chose it.",
+        W/2,
+        900
+    );
+
+
+    /* FOOTER */
+
+    ctx.font =
+        "18px Arial";
+
+    ctx.fillStyle = "#777";
+
+    ctx.fillText(
+        "Keep making thoughtful choices about your money!",
+        W/2,
+        970
+    );
+
+
+    /* DOWNLOAD */
+
+    const link =
+        document.createElement("a");
+
+    link.download =
+        "Money-Choice-Certificate-" +
+        safeFileName(name) +
+        ".jpg";
+
+
+    link.href =
+        canvas.toDataURL(
+            "image/jpeg",
+            .95
+        );
+
+
+    link.click();
+
+}
+
+
+/* =========================================
+   CERTIFICATE BOX
+========================================= */
+
+function drawCertificateBox(
+    ctx,
+    x,
+    y,
+    w,
+    h,
+    bg,
+    textColor,
+    title,
+    value
+){
+
+    ctx.fillStyle = bg;
+
+    roundRect(
+        ctx,
+        x,
+        y,
+        w,
+        h,
+        20
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle = textColor;
+
+    ctx.textAlign = "center";
+
+    ctx.font =
+        "bold 19px Arial";
+
+    ctx.fillText(
+        title,
+        x + w/2,
+        y + 37
+    );
+
+
+    ctx.font =
+        "bold 28px Arial";
+
+    ctx.fillText(
+        value,
+        x + w/2,
+        y + 72
+    );
+
+}
+
+
+/* =========================================
+   ROUNDED RECTANGLE
+========================================= */
+
+function roundRect(
+    ctx,
+    x,
+    y,
+    width,
+    height,
+    radius
+){
+
+    ctx.beginPath();
+
+    ctx.moveTo(x + radius,y);
+
+    ctx.lineTo(x + width - radius,y);
+
+    ctx.quadraticCurveTo(
+        x + width,
+        y,
+        x + width,
+        y + radius
+    );
+
+    ctx.lineTo(
+        x + width,
+        y + height - radius
+    );
+
+    ctx.quadraticCurveTo(
+        x + width,
+        y + height,
+        x + width - radius,
+        y + height
+    );
+
+    ctx.lineTo(
+        x + radius,
+        y + height
+    );
+
+    ctx.quadraticCurveTo(
+        x,
+        y + height,
+        x,
+        y + height - radius
+    );
+
+    ctx.lineTo(
+        x,
+        y + radius
+    );
+
+    ctx.quadraticCurveTo(
+        x,
+        y,
+        x + radius,
+        y
+    );
+
+    ctx.closePath();
+}
+
+
+/* =========================================
+   SAFE FILE NAME
+========================================= */
+
+function safeFileName(name){
+
+    return name
+        .replace(/[^a-z0-9]/gi,"-")
+        .replace(/-+/g,"-")
+        .replace(/^-|-$/g,"");
+}
+
+
+/* =========================================
+   INITIALIZE
+========================================= */
+
+window.addEventListener("load",function(){
+
+    const first =
+        document.querySelector(
+            '.amount[data-amount="100"]'
+        );
+
+    first.classList.add("selected");
+
+    updateUI();
+
+});
+
+</script>
+
+</body>
+</html>
+```
