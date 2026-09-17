@@ -345,8 +345,48 @@ button{
 .dot.give{background:var(--give)}
 
 .alloc-value{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:7px;
     font-weight:950;
     font-size:18px;
+}
+
+.lock-btn{
+    width:28px;
+    height:28px;
+    display:inline-grid;
+    place-items:center;
+    padding:0;
+    border-radius:9px;
+    background:#F4F3FF;
+    border:1px solid #E3E1FF;
+    color:var(--primary);
+    font-size:14px;
+    line-height:1;
+    transition:.2s ease;
+}
+
+.lock-btn:hover{
+    transform:scale(1.05);
+    background:#ECEAFF;
+}
+
+.lock-btn.locked{
+    background:#635BFF;
+    border-color:#635BFF;
+    color:#fff;
+    box-shadow:0 4px 10px rgba(99,91,255,.20);
+}
+
+.lock-btn:active{
+    transform:scale(.94);
+}
+
+input[type=range]:disabled{
+    opacity:.55;
+    cursor:not-allowed;
 }
 
 .percent{
@@ -776,6 +816,11 @@ input[type=range]::-webkit-slider-thumb{
             <div class="alloc-value">
 
                 <span id="saveValue">₹34</span>
+                <button class="lock-btn" id="saveLockBtn"
+                        type="button"
+                        onclick="toggleLock('save')"
+                        aria-label="Lock Save amount"
+                        title="Lock Save amount">🔓</button>
 
                 <span class="percent" id="savePercent">
                     34%
@@ -812,6 +857,11 @@ input[type=range]::-webkit-slider-thumb{
             <div class="alloc-value">
 
                 <span id="spendValue">₹33</span>
+                <button class="lock-btn" id="spendLockBtn"
+                        type="button"
+                        onclick="toggleLock('spend')"
+                        aria-label="Lock Spend amount"
+                        title="Lock Spend amount">🔓</button>
 
                 <span class="percent" id="spendPercent">
                     33%
@@ -848,6 +898,11 @@ input[type=range]::-webkit-slider-thumb{
             <div class="alloc-value">
 
                 <span id="giveValue">₹33</span>
+                <button class="lock-btn" id="giveLockBtn"
+                        type="button"
+                        onclick="toggleLock('give')"
+                        aria-label="Lock Give amount"
+                        title="Lock Give amount">🔓</button>
 
                 <span class="percent" id="givePercent">
                     33%
@@ -1110,6 +1165,14 @@ let saveAmount = 34;
 let spendAmount = 33;
 let giveAmount = 33;
 
+/* Amounts can be locked individually. A locked amount never changes
+   until its lock button is pressed again. */
+let locked = {
+    save: false,
+    spend: false,
+    give: false
+};
+
 let currentScreen = 1;
 
 
@@ -1182,46 +1245,90 @@ function quickSplit(type,button){
 
     button.classList.add("active");
 
+    let values = {
+        save: saveAmount,
+        spend: spendAmount,
+        give: giveAmount
+    };
 
-    if(type === "balanced"){
+    /* If nothing is locked, keep the original quick-split behavior. */
+    if(!locked.save && !locked.spend && !locked.give){
 
-        saveAmount = Math.round(selectedAmount * .34);
-        spendAmount = Math.round(selectedAmount * .33);
-        giveAmount =
-            selectedAmount - saveAmount - spendAmount;
+        if(type === "balanced"){
+            saveAmount = Math.round(selectedAmount * .34);
+            spendAmount = Math.round(selectedAmount * .33);
+            giveAmount =
+                selectedAmount - saveAmount - spendAmount;
+        }
 
+        if(type === "save"){
+            saveAmount = Math.round(selectedAmount * .60);
+            spendAmount = Math.round(selectedAmount * .25);
+            giveAmount =
+                selectedAmount - saveAmount - spendAmount;
+        }
+
+        if(type === "spend"){
+            spendAmount = Math.round(selectedAmount * .60);
+            saveAmount = Math.round(selectedAmount * .25);
+            giveAmount =
+                selectedAmount - saveAmount - spendAmount;
+        }
+
+        if(type === "give"){
+            giveAmount = Math.round(selectedAmount * .60);
+            saveAmount = Math.round(selectedAmount * .25);
+            spendAmount =
+                selectedAmount - saveAmount - giveAmount;
+        }
+
+    }else{
+        /* Locked categories stay fixed. Apply the selected quick plan
+           only to the unlocked categories, while preserving the total. */
+        let unlocked = ["save","spend","give"]
+            .filter(category => !locked[category]);
+
+        let lockedTotal =
+            (locked.save ? saveAmount : 0) +
+            (locked.spend ? spendAmount : 0) +
+            (locked.give ? giveAmount : 0);
+
+        let remaining = Math.max(0, selectedAmount - lockedTotal);
+
+        if(unlocked.length === 0){
+            updateUI();
+            return;
+        }
+
+        let weights = {
+            balanced: {save:.34, spend:.33, give:.33},
+            save:     {save:.60, spend:.25, give:.15},
+            spend:    {save:.25, spend:.60, give:.15},
+            give:     {save:.25, spend:.15, give:.60}
+        }[type];
+
+        let weightTotal = unlocked.reduce(
+            (sum, category) => sum + weights[category], 0
+        );
+
+        let assigned = 0;
+
+        unlocked.forEach((category,index) => {
+            if(index === unlocked.length - 1){
+                values[category] = remaining - assigned;
+            }else{
+                let amount = Math.round(
+                    remaining * weights[category] / weightTotal
+                );
+                values[category] = amount;
+                assigned += amount;
+            }
+        });
+
+        if(!locked.save) saveAmount = values.save;
+        if(!locked.spend) spendAmount = values.spend;
+        if(!locked.give) giveAmount = values.give;
     }
-
-
-    if(type === "save"){
-
-        saveAmount = Math.round(selectedAmount * .60);
-        spendAmount = Math.round(selectedAmount * .25);
-        giveAmount =
-            selectedAmount - saveAmount - spendAmount;
-
-    }
-
-
-    if(type === "spend"){
-
-        spendAmount = Math.round(selectedAmount * .60);
-        saveAmount = Math.round(selectedAmount * .25);
-        giveAmount =
-            selectedAmount - saveAmount - spendAmount;
-
-    }
-
-
-    if(type === "give"){
-
-        giveAmount = Math.round(selectedAmount * .60);
-        saveAmount = Math.round(selectedAmount * .25);
-        spendAmount =
-            selectedAmount - saveAmount - giveAmount;
-
-    }
-
 
     updateUI();
 }
@@ -1233,124 +1340,270 @@ function quickSplit(type,button){
 
 function changeSlider(changed){
 
-    let value;
+    /* Keep the original slider behavior when no amount is locked. */
+    if(!locked.save && !locked.spend && !locked.give){
 
-    if(changed === "save"){
-        value = Number(
-            document.getElementById("saveSlider").value
-        );
-        saveAmount = value;
+        let value;
+
+        if(changed === "save"){
+            value = Number(
+                document.getElementById("saveSlider").value
+            );
+            saveAmount = value;
+        }
+
+        if(changed === "spend"){
+            value = Number(
+                document.getElementById("spendSlider").value
+            );
+            spendAmount = value;
+        }
+
+        if(changed === "give"){
+            value = Number(
+                document.getElementById("giveSlider").value
+            );
+            giveAmount = value;
+        }
+
+        /*
+            Make sure the total never exceeds
+            the selected amount.
+        */
+
+        let total =
+            saveAmount +
+            spendAmount +
+            giveAmount;
+
+        if(total > selectedAmount){
+
+            let excess = total - selectedAmount;
+
+            let others = [];
+
+            if(changed !== "save") others.push("save");
+            if(changed !== "spend") others.push("spend");
+            if(changed !== "give") others.push("give");
+
+
+            for(let category of others){
+
+                if(excess <= 0) break;
+
+
+                if(category === "save"){
+
+                    let reduction =
+                        Math.min(saveAmount,excess);
+
+                    saveAmount -= reduction;
+                    excess -= reduction;
+                }
+
+
+                if(category === "spend"){
+
+                    let reduction =
+                        Math.min(spendAmount,excess);
+
+                    spendAmount -= reduction;
+                    excess -= reduction;
+                }
+
+
+                if(category === "give"){
+
+                    let reduction =
+                        Math.min(giveAmount,excess);
+
+                    giveAmount -= reduction;
+                    excess -= reduction;
+                }
+            }
+        }
+
+
+        /*
+            If total becomes smaller,
+            automatically place remaining
+            money into another category.
+        */
+
+        total =
+            saveAmount +
+            spendAmount +
+            giveAmount;
+
+
+        if(total < selectedAmount){
+
+            let remaining =
+                selectedAmount - total;
+
+
+            if(changed !== "give"){
+                giveAmount += remaining;
+            }
+
+            else if(changed !== "save"){
+                saveAmount += remaining;
+            }
+
+            else{
+                spendAmount += remaining;
+            }
+        }
+
+        updateUI();
+        return;
     }
 
-    if(changed === "spend"){
-        value = Number(
-            document.getElementById("spendSlider").value
-        );
-        spendAmount = value;
+
+    /* A locked slider can never be changed. */
+    if(locked[changed]){
+        updateUI();
+        return;
     }
 
-    if(changed === "give"){
-        value = Number(
-            document.getElementById("giveSlider").value
-        );
-        giveAmount = value;
-    }
+    let slider = document.getElementById(changed + "Slider");
+    let newValue = Number(slider.value);
 
+    let oldValues = {
+        save: saveAmount,
+        spend: spendAmount,
+        give: giveAmount
+    };
+
+    let values = {
+        save: saveAmount,
+        spend: spendAmount,
+        give: giveAmount
+    };
+
+    values[changed] = newValue;
 
     /*
-        Make sure the total never exceeds
-        the selected amount.
-    */
+       LOCKED MODE:
+       If the changed value increases, money is taken only
+       from other UNLOCKED categories.
 
+       If it decreases, released money is added only to
+       another UNLOCKED category.
+
+       Locked categories are never touched.
+    */
+    let delta = newValue - oldValues[changed];
+
+    let others = ["save","spend","give"]
+        .filter(category =>
+            category !== changed && !locked[category]
+        );
+
+    if(delta > 0){
+
+        let need = delta;
+
+        for(let category of others){
+
+            if(need <= 0) break;
+
+            let reduction = Math.min(values[category], need);
+
+            values[category] -= reduction;
+            need -= reduction;
+        }
+
+        /* Prevent the changed amount from taking money
+           that is not available in the other unlocked parts. */
+        if(need > 0){
+            values[changed] =
+                oldValues[changed] + (delta - need);
+        }
+
+    }else if(delta < 0){
+
+        let released = -delta;
+
+        if(others.length > 0){
+            values[others[0]] += released;
+        }else{
+            values[changed] = oldValues[changed];
+        }
+    }
+
+    saveAmount = Math.max(0, Math.round(values.save));
+    spendAmount = Math.max(0, Math.round(values.spend));
+    giveAmount = Math.max(0, Math.round(values.give));
+
+    /*
+       Final safety correction. The total always remains
+       exactly equal to the selected amount.
+    */
     let total =
         saveAmount +
         spendAmount +
         giveAmount;
 
+    if(total !== selectedAmount){
 
-    if(total > selectedAmount){
+        let difference = selectedAmount - total;
 
-        let excess = total - selectedAmount;
+        let available = ["save","spend","give"]
+            .filter(category =>
+                !locked[category] && category !== changed
+            );
 
-        let others = [];
-
-        if(changed !== "save") others.push("save");
-        if(changed !== "spend") others.push("spend");
-        if(changed !== "give") others.push("give");
-
-
-        for(let category of others){
-
-            if(excess <= 0) break;
-
-
-            if(category === "save"){
-
-                let reduction =
-                    Math.min(saveAmount,excess);
-
-                saveAmount -= reduction;
-                excess -= reduction;
-            }
-
-
-            if(category === "spend"){
-
-                let reduction =
-                    Math.min(spendAmount,excess);
-
-                spendAmount -= reduction;
-                excess -= reduction;
-            }
-
-
-            if(category === "give"){
-
-                let reduction =
-                    Math.min(giveAmount,excess);
-
-                giveAmount -= reduction;
-                excess -= reduction;
-            }
-
+        if(available.length === 0 && !locked[changed]){
+            available = [changed];
         }
 
+        for(let category of available){
+
+            if(difference === 0) break;
+
+            if(difference > 0){
+
+                if(category === "save") saveAmount += difference;
+                if(category === "spend") spendAmount += difference;
+                if(category === "give") giveAmount += difference;
+
+                difference = 0;
+
+            }else{
+
+                let current =
+                    category === "save" ? saveAmount :
+                    category === "spend" ? spendAmount :
+                    giveAmount;
+
+                let reduction = Math.min(current, -difference);
+
+                if(category === "save") saveAmount -= reduction;
+                if(category === "spend") spendAmount -= reduction;
+                if(category === "give") giveAmount -= reduction;
+
+                difference += reduction;
+            }
+        }
     }
 
+    updateUI();
+}
+
+
+/* =========================================
+   LOCK / UNLOCK AMOUNT
+========================================= */
+
+function toggleLock(category){
+
+    locked[category] = !locked[category];
 
     /*
-        If total becomes smaller,
-        automatically place remaining
-        money into another category.
+       Do not change the amount when locking.
+       The current value becomes fixed immediately.
     */
-
-    total =
-        saveAmount +
-        spendAmount +
-        giveAmount;
-
-
-    if(total < selectedAmount){
-
-        let remaining =
-            selectedAmount - total;
-
-
-        if(changed !== "give"){
-            giveAmount += remaining;
-        }
-
-        else if(changed !== "save"){
-            saveAmount += remaining;
-        }
-
-        else{
-            spendAmount += remaining;
-        }
-
-    }
-
-
     updateUI();
 }
 
@@ -1366,26 +1619,56 @@ function updateUI(){
         spendAmount +
         giveAmount;
 
+    /*
+       Slider max is the selected amount minus the money already
+       fixed in locked categories (except the current category).
+    */
+    ["save","spend","give"].forEach(category => {
 
-    document.getElementById("saveSlider").max =
-        selectedAmount;
+        let otherLockedTotal = 0;
 
-    document.getElementById("spendSlider").max =
-        selectedAmount;
+        ["save","spend","give"].forEach(other => {
+            if(other !== category && locked[other]){
+                otherLockedTotal +=
+                    other === "save" ? saveAmount :
+                    other === "spend" ? spendAmount :
+                    giveAmount;
+            }
+        });
 
-    document.getElementById("giveSlider").max =
-        selectedAmount;
+        let slider = document.getElementById(category + "Slider");
 
+        slider.max =
+            Math.max(0, selectedAmount - otherLockedTotal);
 
-    document.getElementById("saveSlider").value =
-        saveAmount;
+        slider.value =
+            category === "save" ? saveAmount :
+            category === "spend" ? spendAmount :
+            giveAmount;
 
-    document.getElementById("spendSlider").value =
-        spendAmount;
+        slider.disabled = locked[category];
 
-    document.getElementById("giveSlider").value =
-        giveAmount;
+        let lockBtn =
+            document.getElementById(category + "LockBtn");
 
+        lockBtn.textContent =
+            locked[category] ? "🔒" : "🔓";
+
+        lockBtn.classList.toggle(
+            "locked",
+            locked[category]
+        );
+
+        lockBtn.setAttribute(
+            "aria-label",
+            (locked[category] ? "Unlock " : "Lock ") +
+            category + " amount"
+        );
+
+        lockBtn.title =
+            (locked[category] ? "Unlock " : "Lock ") +
+            category + " amount";
+    });
 
     document.getElementById("saveValue")
         .textContent = "₹" + saveAmount;
@@ -1430,7 +1713,6 @@ function updateUI(){
     document.getElementById("totalValue")
         .textContent = "₹" + total;
 
-
     document.getElementById("availableValue")
         .textContent = "₹" + selectedAmount;
 
@@ -1466,6 +1748,10 @@ function resetSplit(){
         saveAmount -
         spendAmount;
 
+    /* Reset also removes any active locks. */
+    locked.save = false;
+    locked.spend = false;
+    locked.give = false;
 
     document.querySelectorAll(".quick")
         .forEach(b => b.classList.remove("active"));
